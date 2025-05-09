@@ -1,42 +1,36 @@
 <template>
-    <div style="max-width:350px;margin:100px auto;">
-      <h1>회원가입</h1>
-      <form @submit.prevent="register">
-        <input v-model="username" placeholder="이름" required /><br>
-        <input v-model="email" type="email" placeholder="이메일" required /><br>
-        <input v-model="password" type="password" placeholder="비밀번호" required /><br>
-        <button type="submit">회원가입</button>
-      </form>
-      <p v-if="msg" style="color: red;">{{ msg }}</p>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue'
-  import axios from 'axios'
-  
-  const username = ref('')
-  const email = ref('')
-  const password = ref('')
-  const msg = ref('')
-  
-  const register = async () => {
-    try {
-      const response = await axios.post('http://localhost:3001/register', {
-        username: username.value,
-        email: email.value,
-        password: password.value
-      })
-      if (response.data.success) {
-        msg.value = response.data.message
-        username.value = ''
-        email.value = ''
-        password.value = ''
-      } else {
-        msg.value = response.data.message
-      }
-    } catch (e) {
-      msg.value = '서버에 연결할 수 없습니다.'
+  <form @submit.prevent="onRegister">
+    <input v-model="username" required placeholder="이름" />
+    <input v-model="email" required placeholder="이메일" />
+    <input v-model="password" type="password" required placeholder="비밀번호" />
+    <button type="submit">회원가입</button>
+    <div v-if="msg">{{ msg }}</div>
+  </form>
+</template>
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const username = ref('')
+const email = ref('')
+const password = ref('')
+const msg = ref('')
+const onRegister = async () => {
+  try {
+    const res = await fetch('http://localhost:3001/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username.value, email: email.value, password: password.value })
+    })
+    const data = await res.json()
+    if (data.success) {
+      msg.value = data.message
+      router.push('/') // 회원가입 성공 후, 로그인창 이동
+    } else {
+      msg.value = data.message
     }
+  } catch (e) {
+    msg.value = '서버 오류'
   }
-  </script>
+}
+</script>
